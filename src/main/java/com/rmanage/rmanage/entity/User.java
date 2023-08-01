@@ -1,11 +1,18 @@
 package com.rmanage.rmanage.entity;
 
-import com.rmanage.rmanage.worker.Worker;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.awt.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Entity
+@AllArgsConstructor
+@Data
 public class User extends BaseTimeEntity{
 
     @Id

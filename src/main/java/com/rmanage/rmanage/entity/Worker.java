@@ -1,52 +1,48 @@
-package com.rmanage.rmanage.worker;
+package com.rmanage.rmanage.entity;
 
-import com.rmanage.rmanage.entity.User;
-import com.rmanage.rmanage.entity.WorkPlace;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @NoArgsConstructor
 @Entity
-@Getter
+@Data
 public class Worker {
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long workerId;
-
+    @MapsId("workplace_id")
     @ManyToOne
-    @JoinColumn(name = "workPlace_id")
     private WorkPlace workPlace;
 
+    @MapsId("user_id")
     @ManyToOne
-    @JoinColumn(name = "user_id")
     private User user;
 
+
     private String name;
-    private LocalDateTime period;
+    private Timestamp period;
     private String color;
     private boolean isCertified;
     private String breakTime;
-    private String holidayPay;
+    private boolean holidayPay;
+    private boolean isManager;
     private int hourlyWage;
-    private LocalDateTime payDay;
 
-
-    @Builder
-    public Worker(WorkPlace workPlace, User user, String name, LocalDateTime period, String color, boolean isCertified, String breakTime ,String holidayPay, int hourlyWage, LocalDateTime payDay) {
+    public Worker(WorkPlace workPlace, User user, String name, Timestamp period, String color, boolean isCertified, String breakTime, boolean holidayPay, boolean isManager, int hourlyWage) {
         this.workPlace = workPlace;
         this.user = user;
         this.name = name;
         this.period = period;
         this.color = color;
         this.isCertified = isCertified;
+        this.breakTime = breakTime;
         this.holidayPay = holidayPay;
+        this.isManager = isManager;
         this.hourlyWage = hourlyWage;
-        this.payDay = payDay;
     }
 }

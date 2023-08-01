@@ -4,15 +4,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
 @NoArgsConstructor
 @Entity
-@Getter
-
+@Data
 public class WorkPlace {
 
     @Id
@@ -21,11 +19,13 @@ public class WorkPlace {
 
     private String name;
     private String wageType;
+    private boolean tax;
+    private String authenticationCode;
 
-
-    @Builder
-    public WorkPlace(String name, String wageType) {
+    public WorkPlace(String name, String wageType, boolean tax, String authenticationCode) {
         this.name = name;
         this.wageType = wageType;
+        this.tax = tax;
+        this.authenticationCode = authenticationCode;
     }
 }
