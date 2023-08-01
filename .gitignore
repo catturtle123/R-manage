@@ -47,4 +47,8 @@ gradle-app.setting
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
+/src/**/application.properties
+
 application-secret.properties
+
+application-aws.properties
