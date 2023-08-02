@@ -10,5 +10,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     List<Document> findDocumentByWorker(Worker worker);
 
+    Document findDocumentByType(String type);
 
 }

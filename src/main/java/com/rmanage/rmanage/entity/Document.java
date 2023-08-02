@@ -32,15 +32,18 @@ public class Document {
     private Worker worker;
     private String type;
 
+    private String imageUrl;
+
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate expireDate;
 
-    public Document(User user, WorkPlace workPlace, String type, LocalDate expireDate, Worker worker) {
+    public Document(User user, WorkPlace workPlace, String type, LocalDate expireDate, Worker worker, String imageUrl) {
         this.user = user;
         this.workPlace = workPlace;
         this.type = type;
         this.expireDate = expireDate;
         this.worker = worker;
+        this.imageUrl = imageUrl;
     }
 }

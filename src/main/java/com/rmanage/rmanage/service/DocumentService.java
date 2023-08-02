@@ -3,21 +3,18 @@ package com.rmanage.rmanage.service;
 import com.rmanage.rmanage.config.s3Setting.S3Uploader;
 import com.rmanage.rmanage.dto.ResponseDocument;
 import com.rmanage.rmanage.entity.Document;
-import com.rmanage.rmanage.entity.User;
-import com.rmanage.rmanage.entity.WorkPlace;
 import com.rmanage.rmanage.entity.Worker;
 import com.rmanage.rmanage.repository.DocumentRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DocumentService {
@@ -32,62 +29,69 @@ public class DocumentService {
         this.s3Uploader = s3Uploader;
     }
 
-    public ResponseDocument getDocument(int workEmployeesId, String documentsType) {
+    public List<ResponseDocument> getDocuments(int workEmployeesId) {
         try {
             Document document = null;
+            // 근무 근로자 찾기
             Worker worker = entityManager.find(Worker.class, workEmployeesId);
             if(worker == null){
-                return new ResponseDocument(false,3012,"해당하는 근무지, 근로자 정보가 없음",new Document(),null);
+                throw new IllegalArgumentException("해당하는 근무지, 근로자 정보가 없음");
             }
+            // 근무 근로자 아이디로 문서 찾기
             List<Document> documents = documentRepository.findDocumentByWorker(worker);
+            // 조회 성공
+            List<ResponseDocument> responseDocuments = new ArrayList<>();
             for(Document d : documents){
-                if(documentsType.equals(d.getType())){
-                    document = d;
-                    break;
-                }
+                responseDocuments.add(new ResponseDocument(d.getDocumentId(),d.getType(),d.getImageUrl(),d.getExpireDate()));
             }
-            if(document == null) {
-                return new ResponseDocument(false,3013,"해당하는 문서가 존재하지 않음",new Document(),null);
-            }
-
-            ResponseDocument responseDocument = new ResponseDocument(true,1011,"서류 조회 성공",document,null);
-            return responseDocument;
+            return responseDocuments;
         }   catch (Exception e){
             System.out.println(e);
-            return new ResponseDocument(false,3021,"서류 조회 실패",new Document(),null);
+            throw new IllegalArgumentException("서류 조회 실패");
         }
-
     }
 
-    public ResponseDocument postDocument(int workEmployeesId, String documentsType, LocalDate validity, MultipartFile image) {
-        try {
-            List<String> types = List.of("employmentContract","insuranceDocument","insuranceCard");
-
-            if(!types.contains(documentsType)){
-                return new ResponseDocument(false,2070,"타입이 누락되거나 잘못됨",new Document(),null);
-            }
-
-            Worker worker = entityManager.find(Worker.class, workEmployeesId);
-            if(worker == null){
-                return new ResponseDocument(false,3012,"해당하는 근무지, 근로자 정보가 없음",new Document(),null);
-            }
-            List<Document> documents = documentRepository.findDocumentByWorker(worker);
-            for(Document d : documents){
-                if(documentsType.equals(d.getType())){
-                    return new ResponseDocument(false,2080,"이미 겹치는 서류가 존재함.",new Document(),null);
+    public void postDocument(int workEmployeesId, String type, LocalDate expireDate, MultipartFile image) {
+                try {
+                    // 근무 근로자 조회
+                    Worker worker = entityManager.find(Worker.class, workEmployeesId);
+                    if(worker == null){
+                        throw new IllegalArgumentException("해당하는 근무지, 근로자 정보가 없음");
+                    }
+                    // 이미지 업로드
+                    String filename = null;
+                    filename = s3Uploader.uploadFiles(image, "image");
+                    if(filename == null){
+                        throw new IllegalArgumentException("이미지 업로드에 실패함.");
+                    }
+                    // 서류 등록 성공
+                    Document document = new Document(worker.getUser(), worker.getWorkPlace(), type, expireDate, worker, filename);
+                    Document theDocument = documentRepository.save(document);
+                }   catch (Exception e) {
+                    System.out.println(e);
+                    throw new IllegalArgumentException("서류 등록 실패");
                 }
+    }
+
+    public void deleteDocument(Long documentId) {
+        try {
+            // 근무 근로자 조회
+            Optional<Document> document = documentRepository.findById(documentId);
+            // 이미지 삭제
+            if(document == null){
+                throw new IllegalArgumentException("no document");
             }
-            String filename = "";
-            s3Uploader.uploadFiles(image,"image");
-            Document document = new Document(worker.getUser(), worker.getWorkPlace(), documentsType, validity, worker);
-            Document theDocument = documentRepository.save(document);
-            ResponseDocument responseDocument = new ResponseDocument(true,1012,"서류 등록 성공",theDocument,filename);
-            return responseDocument;
+            Document document1 = document.get();
+            System.out.println(document1);
+            s3Uploader.fileDelete(document1.getImageUrl());
+            // 서류 삭제 성공
+            documentRepository.delete(document1);
         }   catch (Exception e) {
             System.out.println(e);
-            return new ResponseDocument(false,3022,"서류 등록 실패",new Document(),null);
+            throw new IllegalArgumentException("failed");
         }
-
     }
+
+
 }
 

@@ -1,5 +1,6 @@
 package com.rmanage.rmanage.config.s3Setting;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -28,7 +29,12 @@ public class S3Uploader {
 
     public String upload(File uploadFile, String filePath) {
         String fileName = filePath + "/" + UUID.randomUUID() + uploadFile.getName();   // S3에 저장된 파일 이름
-        String uploadImageUrl = putS3(uploadFile, fileName); // s3로 업로드
+        String uploadImageUrl = null;
+        try {
+            uploadImageUrl = putS3(uploadFile, fileName); // s3로 업로드
+        } catch (Exception e){
+            System.out.println(e);
+        }
         removeNewFile(uploadFile);
         return uploadImageUrl;
     }
@@ -58,5 +64,17 @@ public class S3Uploader {
             return Optional.of(convertFile);
         }
         return Optional.empty();
+    }
+
+    // delete file
+    public void fileDelete(String fileName) {
+        try {
+            String fileName2 = fileName.replace("https://rmanage.s3.ap-northeast-2.amazonaws.com/","");
+            System.out.println(fileName2);
+            amazonS3Client.deleteObject(bucket, fileName2);
+        } catch (AmazonServiceException e) {
+            System.err.println(e.getErrorMessage());
+            throw new IllegalArgumentException("이미지 삭제에 실패함");
+        }
     }
 }
