@@ -70,11 +70,10 @@ public class S3Uploader {
     public void fileDelete(String fileName) {
         try {
             String fileName2 = fileName.replace("https://rmanage.s3.ap-northeast-2.amazonaws.com/","");
-            System.out.println(fileName2);
             amazonS3Client.deleteObject(bucket, fileName2);
         } catch (AmazonServiceException e) {
             System.err.println(e.getErrorMessage());
-            throw new IllegalArgumentException("이미지 삭제에 실패함");
+            throw new IllegalArgumentException("image delete failed");
         }
     }
 }

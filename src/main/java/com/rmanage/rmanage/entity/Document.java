@@ -46,4 +46,14 @@ public class Document {
         this.worker = worker;
         this.imageUrl = imageUrl;
     }
+
+    public Document(Long documentId, User user, WorkPlace workPlace, Worker worker, String type, String imageUrl, LocalDate expireDate) {
+        this.documentId = documentId;
+        this.user = user;
+        this.workPlace = workPlace;
+        this.worker = worker;
+        this.type = type;
+        this.imageUrl = imageUrl;
+        this.expireDate = expireDate;
+    }
 }

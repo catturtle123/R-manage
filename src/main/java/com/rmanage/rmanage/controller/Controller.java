@@ -1,15 +1,15 @@
 package com.rmanage.rmanage.controller;
 
-import com.rmanage.rmanage.dto.ResponseDocument;
+import com.rmanage.rmanage.dto.ResponseDto;
+import com.rmanage.rmanage.dto.ResultDto;
 import com.rmanage.rmanage.entity.User;
 import com.rmanage.rmanage.service.DocumentService;
 import jakarta.persistence.EntityManager;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,33 +18,57 @@ public class Controller {
 
     private DocumentService documentService;
 
-    private EntityManager entityManager;
-
     public Controller(DocumentService theDocumentService){
         this.documentService = theDocumentService;
     }
 
-    @GetMapping("/every/workEmployees/{workEmployeesId}/documents")
-    public ResponseEntity<List<ResponseDocument>> getDocuments(@PathVariable int workEmployeesId){
-        return ResponseEntity.ok(documentService.getDocuments(workEmployeesId));
+    @GetMapping("/every/workers/{workerId}/documents")
+    public ResponseEntity<ResponseDto> getDocuments(@PathVariable int workerId){
+        ResponseDto responseDto = documentService.getDocuments(workerId);
+        ResponseEntity<ResponseDto> responseEntity = null;
+        if(responseDto.getCode() <= 1999){
+            responseEntity = ResponseEntity.ok(responseDto);
+        } else{
+            responseEntity = new ResponseEntity(responseDto,HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
     }
 
-    @PostMapping("/every/workEmployees/{workEmployeesId}/documents")
-    public ResponseEntity postDocument(@PathVariable int workEmployeesId, @RequestParam(value = "type") String type,
+    @PostMapping("/every/workers/{workerId}/documents")
+    public ResponseEntity postDocument(@PathVariable int workerId, @RequestParam(value = "type") String type,
                                        @RequestParam(value = "expireDate") LocalDate expireDate, @RequestParam(value = "image", required = false) MultipartFile image){
-        documentService.postDocument(workEmployeesId, type, expireDate, image);
-        return ResponseEntity.ok("서류 등록이 완료 되었습니다.");
+        ResponseDto responseDto = documentService.postDocument(workerId, type, expireDate, image);
+        ResponseEntity<ResponseDto> responseEntity = null;
+        if(responseDto.getCode() <= 1999){
+            responseEntity = ResponseEntity.ok(responseDto);
+        } else{
+            responseEntity = new ResponseEntity(responseDto,HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
     }
 
     @DeleteMapping("/every/documents/{documentId}")
-    public ResponseEntity postDocument(@PathVariable int documentId){
-        documentService.deleteDocument((long)documentId);
-        return ResponseEntity.ok("서류 삭제가 완료 되었습니다.");
+    public ResponseEntity deleteDocument(@PathVariable int documentId){
+        ResponseDto responseDto = documentService.deleteDocument((long)documentId);
+        ResponseEntity<ResponseDto> responseEntity = null;
+        if(responseDto.getCode() <= 1999){
+            responseEntity = ResponseEntity.ok(responseDto);
+        } else{
+            responseEntity = new ResponseEntity(responseDto,HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
     }
 
-    @PostMapping("/test")
-    public void test(){
-        User user = new User();
-        entityManager.persist(user);
+    @PutMapping("/every/documents/{documentId}")
+    public ResponseEntity putDocument(@PathVariable int documentId,@RequestParam(value = "type") String type,
+                                      @RequestParam(value = "expireDate") LocalDate expireDate, @RequestParam(value = "image", required = false) MultipartFile image){
+        ResponseDto responseDto = documentService.putDocument((long)documentId, type, expireDate, image);
+        ResponseEntity<ResponseDto> responseEntity = null;
+        if(responseDto.getCode() <= 1999){
+            responseEntity = ResponseEntity.ok(responseDto);
+        } else{
+            responseEntity = new ResponseEntity(responseDto,HttpStatus.BAD_REQUEST);
+        }
+        return responseEntity;
     }
 }
